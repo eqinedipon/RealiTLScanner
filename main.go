@@ -33,7 +33,9 @@ func main() {
 	flag.IntVar(&port, "port", 443, "Specify a HTTPS port to check")
 	// Increased default thread count from 2 to 4 for faster scanning on my machine
 	flag.IntVar(&thread, "thread", 4, "Count of concurrent tasks")
-	flag.StringVar(&out, "out", "out.csv", "Output file to store the result")
+	// Changed default output filename to include a timestamp so runs don't overwrite each other
+	defaultOut := "out_" + time.Now().Format("20060102_150405") + ".csv"
+	flag.StringVar(&out, "out", defaultOut, "Output file to store the result")
 	// Reduced default timeout from 10 to 7 seconds to skip slow hosts faster
 	flag.IntVar(&timeout, "timeout", 7, "Timeout for every check")
 	flag.BoolVar(&verbose, "v", false, "Verbose output")
@@ -104,13 +106,3 @@ func main() {
 	geo := NewGeo()
 	var wg sync.WaitGroup
 	wg.Add(thread)
-	for i := 0; i < thread; i++ {
-		go func() {
-			for ip := range hostChan {
-				ScanTLS(ip, outCh, geo)
-			}
-			wg.Done()
-		}()
-	}
-	t := time.Now()
-	slog.I
